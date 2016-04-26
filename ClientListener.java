@@ -1,11 +1,10 @@
 /**
  * ClientListener.java
  *
- * This class runs on the client end and just
- * displays any text received from the server.
+ * Details here
  *
  */
-import java.net.Socket;
+import java.net.*;
 import java.io.DataOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,11 +14,23 @@ import java.util.ArrayList;
 
 public class ClientListener implements Runnable
 {
-	private Socket connectionSock = null;
+	private MulticastSocket connectionSock = null;
+	public String storedMessage = ""; // for connection confirmation
+	private InetAddress group = null;
 
-	ClientListener(Socket sock)
+	ClientListener(MulticastSocket sock, InetAddress grp) throws Exception
 	{
-		this.connectionSock = sock;
+		try
+		{
+			this.connectionSock = sock;
+			this.group = grp;
+			connectionSock.joinGroup(group);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error: " + e.toString());
+		}
+		
 	}
 
 	public void run()
@@ -27,22 +38,16 @@ public class ClientListener implements Runnable
        		 // Wait for data from the server.  If received, output it.
 		try
 		{
-			BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSock.getInputStream()));
+			BufferedReader serverInput = new BufferedReader(new InputStreamReader(System.in));
 			while (true)
 			{
+				byte[] receiveData = new byte[1024];
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				connectionSock.receive(receivePacket);
 				// Get data sent from the server
-				String serverText = serverInput.readLine();
-				if (serverInput != null)
-				{
-					System.out.println(serverText);
-				}
-				else
-				{
-					// Connection was lost
-					System.out.println("Closing connection for socket " + connectionSock);
-					connectionSock.close();
-					break;
-				}
+				String serverText = new String(receivePacket.getData()).trim();
+				System.out.println(serverText);
+				storedMessage = serverText;
 			}
 		}
 		catch (Exception e)

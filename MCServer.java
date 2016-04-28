@@ -49,7 +49,7 @@ public class MCServer
           	String sentence = new String(receivePacket.getData()).trim();
 
           	System.out.println(sentence);
-          	
+
           	String response = "";
 
           	InetAddress group = InetAddress.getByName(multicastIP);
@@ -75,23 +75,27 @@ public class MCServer
           	}
           	else
           	{
+          		String quitUser = ""; // In case a user inputs a quit command
           		for (String s : userList)
           		{
-          			System.out.println("DEBUG: Check");
           			if (sentence.startsWith(s))
           			{
-          				System.out.println("DEBUG: Check2");
 	          			if(sentence.length() >= 7 && sentence.startsWith(": !quit", sentence.indexOf(":")))
 			          	{
 			          		response = "~~ " + s + " has left the room.\n";
 
-			          		userList.remove(userList.indexOf(s));
+			          		quitUser = s;
 			          	}
 			          	else
 			          	{
 			          		response = sentence;
 			         	}
           			}
+          		}
+
+          		if(!quitUser.equals(""))
+          		{
+          			userList.remove(userList.indexOf(quitUser));
           		}
 
           		System.out.println(response);

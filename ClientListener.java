@@ -17,6 +17,7 @@ public class ClientListener implements Runnable
 	private MulticastSocket connectionSock = null;
 	public String storedMessage = ""; // for connection confirmation
 	private InetAddress group = null;
+	public boolean clientRunning = true;
 
 	ClientListener(MulticastSocket sock, InetAddress grp) throws Exception
 	{
@@ -39,7 +40,7 @@ public class ClientListener implements Runnable
 		try
 		{
 			BufferedReader serverInput = new BufferedReader(new InputStreamReader(System.in));
-			while (true)
+			while (clientRunning)
 			{
 				byte[] receiveData = new byte[1024];
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -49,9 +50,14 @@ public class ClientListener implements Runnable
 				System.out.println(serverText);
 				storedMessage = serverText;
 			}
+			connectionSock.leaveGroup(group);
+		    System.out.println("exit");
+		    connectionSock.close();
+		    System.out.println("exit2");
 		}
 		catch (Exception e)
 		{
+			System.out.println("FROM LISTENER");
 			System.out.println("Error: " + e.toString());
 		}
 	}

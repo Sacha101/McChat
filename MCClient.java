@@ -74,8 +74,9 @@ public class MCClient
 							sendData = message.getBytes();
 							sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
 							sendSock.send(sendPacket);
-							if (message.length() >= 5 && message.substring(0,5) == "!quit")
+							if (input.length() >= 5 && input.startsWith("!quit"))
 							{
+								listener.clientRunning = false;
 								state = 3;
 							}
 						}
@@ -84,9 +85,9 @@ public class MCClient
 						break;
 				}			
 			}
-			sendSock.close();
-		    connectionSock.leaveGroup(group);
-		    connectionSock.close();
+		    sendSock.close();
+		    System.out.println("exit3");
+		    System.exit(0);
 		}
 		catch (IOException e)
 		{

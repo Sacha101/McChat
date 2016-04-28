@@ -46,7 +46,6 @@ public class MCClient
 			while (state < 3)
 			{
 				byte[] sendData = new byte[1024];
-
 				switch (state)
 				{
 					case 0: //send initial info to server
@@ -70,11 +69,11 @@ public class MCClient
 						while (state == 2)
 						{
 							//message = keyboard.nextLine();
-							message = inFromUser.readLine();
+							String input = inFromUser.readLine();
+							message = username + ": " + input; //append username to front so the server knows who is sending
 							sendData = message.getBytes();
 							sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
 							sendSock.send(sendPacket);
-
 							if (message.length() >= 5 && message.substring(0,5) == "!quit")
 							{
 								state = 3;

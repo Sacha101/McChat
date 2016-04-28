@@ -18,13 +18,11 @@ public class MCServer
 	public static int outboundPort = 8888;
 
 	// Maintain list of all client sockets for broadcast
-	private ArrayList<InetAddress> socketList;
 	private ArrayList<String> userList;
 	private DatagramSocket serverSocket = null;
 
 	public MCServer()
 	{
-		socketList = new ArrayList<InetAddress>();
 		userList = new ArrayList<String>();
 	}
 
@@ -50,42 +48,58 @@ public class MCServer
           	serverSocket.receive(receivePacket);
           	String sentence = new String(receivePacket.getData()).trim();
 
+          	System.out.println(sentence);
+          	
           	String response = "";
 
-          	if(sentence.length() >= 3 && sentence.substring(0,3).equals("ct "))
+          	InetAddress group = InetAddress.getByName(multicastIP);
+
+          	if(sentence.length() >= 3 && sentence.substring(0,3).equals("ct ")) //if it is a connection string
           	{
           		String newUser = sentence.substring(3);
-          		response = "~~ " + newUser + " has entered the room.\n";
+          		if(!userList.contains(newUser))
+          		{
+          			userList.add(newUser);
 
-          		userList.add(newUser);
-          		InetAddress newAddr = receivePacket.getAddress();
-          		socketList.add(newAddr);
-          	}
-          	else if(sentence.length() >= 5 && sentence.substring(0,5).equals("!quit"))
-          	{
-          		InetAddress quitAddr = receivePacket.getAddress();
-          		int idx = socketList.indexOf(quitAddr);
-          		String quitUser = userList.get(idx);
-          		response = "~~ " + quitUser + " has left the room.\n";
+          			response = "~~ " + newUser + " has entered the room.";
 
-          		socketList.remove(idx);
-          		userList.remove(idx);
+          			sendData = response.getBytes();
+		          	DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, group, outboundPort);
+		          	serverSocket.send(sendPacket);
+          		}
+          		else
+          		{
+          			//TODO:
+          			//Private message server rejection back to sender
+          		}
           	}
           	else
           	{
-          		InetAddress addr = receivePacket.getAddress();
-          		int idx = socketList.indexOf(addr);
-          		String user = userList.get(idx);
-          		response = user + ": " + sentence + "\n";
+          		for (String s : userList)
+          		{
+          			System.out.println("DEBUG: Check");
+          			if (sentence.startsWith(s))
+          			{
+          				System.out.println("DEBUG: Check2");
+	          			if(sentence.length() >= 7 && sentence.startsWith(": !quit", sentence.indexOf(":")))
+			          	{
+			          		response = "~~ " + s + " has left the room.\n";
+
+			          		userList.remove(userList.indexOf(s));
+			          	}
+			          	else
+			          	{
+			          		response = sentence;
+			         	}
+          			}
+          		}
+
+          		System.out.println(response);
+
+	          	sendData = response.getBytes();
+	          	DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, group, outboundPort);
+	          	serverSocket.send(sendPacket);
           	}
-
-          	System.out.println(response);
-
-          	sendData = response.getBytes();
-          	InetAddress group = InetAddress.getByName(multicastIP);
-          	DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, group, outboundPort);
-          	serverSocket.send(sendPacket);
-
 		}
 	}
 

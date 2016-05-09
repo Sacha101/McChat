@@ -9,13 +9,18 @@ import java.io.DataOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.Scanner;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class MCClient
 {
 	public static String multicastIP = "228.0.0.1";
 	public static int inboundPort = 8888;
 	public static int outboundPort = 8887;
+
 
 	public static void main(String[] args) throws Exception
 	{
@@ -29,14 +34,14 @@ public class MCClient
 		    InetAddress group = InetAddress.getByName(multicastIP); //
 		    InetAddress address = InetAddress.getByName("localhost"); //target server address
 
+		    String username = args[0];
+
 			// Start a thread to listen and display data sent by the server
-			ClientListener listener = new ClientListener(connectionSock, group);
+			ClientListener listener = new ClientListener(connectionSock, group, username);
 			Thread theThread = new Thread(listener);
 			theThread.start();
 
 			int state = 0;
-
-			String username = args[0];
 
 			String message = "ct " + username;
 			String response = "";
@@ -70,15 +75,39 @@ public class MCClient
 						{
 							//message = keyboard.nextLine();
 							String input = inFromUser.readLine();
-							message = username + ": " + input; //append username to front so the server knows who is sending
-							sendData = message.getBytes();
-							sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
-							sendSock.send(sendPacket);
 							if (input.length() >= 5 && input.startsWith("!quit"))
 							{
+								
 								listener.clientRunning = false;
 								state = 3;
+								message = username + ": " + input; //append username to front so the server knows who is sending
+								sendData = message.getBytes();
+								sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
+								sendSock.send(sendPacket);
 							}
+							else if (input.length() >= 4 && input. startsWith("!log"))
+							{
+								Date logDate = new Date();
+								SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
+
+								String logName = ("Chatlog " + dt.format(logDate) + ".txt");
+								PrintWriter pw = new PrintWriter(new FileWriter(logName));
+								for(String s : listener.log)
+								{
+									System.out.println(s);
+									pw.println(s);
+								}
+								System.out.println("Chat log written to " + logName);
+								pw.close();
+							}
+							else
+							{
+								message = username + ": " + input; //append username to front so the server knows who is sending
+								sendData = message.getBytes();
+								sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
+								sendSock.send(sendPacket);
+							}
+							
 						}
 						break;
 					default:
@@ -86,7 +115,6 @@ public class MCClient
 				}			
 			}
 		    sendSock.close();
-		    System.out.println("exit3");
 		    System.exit(0);
 		}
 		catch (IOException e)

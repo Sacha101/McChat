@@ -18,14 +18,18 @@ public class ClientListener implements Runnable
 	public String storedMessage = ""; // for connection confirmation
 	private InetAddress group = null;
 	public boolean clientRunning = true;
+	public String username = "";
+	public ArrayList<String> log; 
 
-	ClientListener(MulticastSocket sock, InetAddress grp) throws Exception
+	ClientListener(MulticastSocket sock, InetAddress grp, String username) throws Exception
 	{
 		try
 		{
 			this.connectionSock = sock;
 			this.group = grp;
+			this.username = username;
 			connectionSock.joinGroup(group);
+			log = new ArrayList<String>();
 		}
 		catch(Exception e)
 		{
@@ -47,13 +51,29 @@ public class ClientListener implements Runnable
 				connectionSock.receive(receivePacket);
 				// Get data sent from the server
 				String serverText = new String(receivePacket.getData()).trim();
-				System.out.println(serverText);
-				storedMessage = serverText;
+				if(serverText.startsWith(": !w", serverText.indexOf(":")) && serverText.contains("/w"))
+				{
+					String recipient = serverText.substring(serverText.indexOf("/") + 1, serverText.indexOf("/w"));
+					if (recipient.equals(username))
+					{
+						serverText = serverText.replace(" !w", "");
+						serverText = serverText.replace(("/" + recipient + "/w"), "(WHISPER)");
+						System.out.println(serverText);
+						storedMessage = serverText;
+						log.add(serverText);
+					}
+						
+				}
+				else
+				{
+					System.out.println(serverText);
+					storedMessage = serverText;
+					log.add(serverText);
+				}
+				
 			}
 			connectionSock.leaveGroup(group);
-		    System.out.println("exit");
 		    connectionSock.close();
-		    System.out.println("exit2");
 		}
 		catch (Exception e)
 		{

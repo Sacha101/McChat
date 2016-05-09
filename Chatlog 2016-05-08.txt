@@ -1,0 +1,5 @@
+~~ taro has entered the room.
+kanra: !beep
+taro: doot
+kanra: !w /taro/ beepdoot
+kanra: (WHISPER) beepdoot

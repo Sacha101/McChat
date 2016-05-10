@@ -1,8 +1,14 @@
 /**
  * MCClient.java
  *
- * details here
+ * Usage: java MCClient serverAddress username
  *
+ * Handles incoming server commands and client-side commands, and sends user messages
+ * Spins off a listener thread to handle incoming messages
+ * 
+ * Local commands:
+ * !quit - closes the client
+ * !w [target] sends a private whisper message to the target username
  */
 import java.net.*;
 import java.io.DataOutputStream;
@@ -17,7 +23,7 @@ import java.text.SimpleDateFormat;
 
 public class MCClient
 {
-	public static String multicastIP = "228.0.0.1";
+	public static String multicastIP = "224.0.0.3";
 	public static int inboundPort = 8888;
 	public static int outboundPort = 8887;
 
@@ -32,9 +38,9 @@ public class MCClient
 		    DatagramSocket sendSock = new DatagramSocket();
 
 		    InetAddress group = InetAddress.getByName(multicastIP); //
-		    InetAddress address = InetAddress.getByName("localhost"); //target server address
+		    InetAddress address = InetAddress.getByName(args[0]); //target server address
 
-		    String username = args[0];
+		    String username = args[1];
 
 			// Start a thread to listen and display data sent by the server
 			ClientListener listener = new ClientListener(connectionSock, group, username);
@@ -67,6 +73,11 @@ public class MCClient
 							{
 								state = 2;
 							}
+							else
+							{
+								listener.clientRunning = false;
+								state = 3;
+							}
 						}						
 						break;
 					case 2: //send messages
@@ -85,7 +96,7 @@ public class MCClient
 								sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
 								sendSock.send(sendPacket);
 							}
-							else if (input.length() >= 4 && input. startsWith("!log"))
+							else if (input.length() >= 4 && input.startsWith("!log"))
 							{
 								Date logDate = new Date();
 								SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
@@ -107,7 +118,6 @@ public class MCClient
 								sendPacket = new DatagramPacket(sendData, sendData.length, address, outboundPort);
 								sendSock.send(sendPacket);
 							}
-							
 						}
 						break;
 					default:

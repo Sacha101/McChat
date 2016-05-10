@@ -1,7 +1,7 @@
 /**
  * ClientListener.java
  *
- * Details here
+ * Handles incoming messages for the MCClient, converts whisper command text to whisper label
  *
  */
 import java.net.*;
@@ -51,13 +51,13 @@ public class ClientListener implements Runnable
 				connectionSock.receive(receivePacket);
 				// Get data sent from the server
 				String serverText = new String(receivePacket.getData()).trim();
-				if(serverText.startsWith(": !w", serverText.indexOf(":")) && serverText.contains("/w"))
+				if(serverText.startsWith(": !w", serverText.indexOf(":")) && serverText.contains("[") && serverText.contains("]"))
 				{
-					String recipient = serverText.substring(serverText.indexOf("/") + 1, serverText.indexOf("/w"));
+					String recipient = serverText.substring(serverText.indexOf("[") + 1, serverText.indexOf("]"));
 					if (recipient.equals(username))
 					{
 						serverText = serverText.replace(" !w", "");
-						serverText = serverText.replace(("/" + recipient + "/w"), "(WHISPER)");
+						serverText = serverText.replace(("[" + recipient + "]"), "(WHISPER)"); //Uses a whiser to send an error message
 						System.out.println(serverText);
 						storedMessage = serverText;
 						log.add(serverText);

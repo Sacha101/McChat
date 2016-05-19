@@ -30,7 +30,7 @@ Client-side inline commands:
 
 !w [target] - sends a private whisper message to the target username
 
-!log - saves a .txt file containing the chat log since the calling user has entered
+!log - saves a .txt file containing the chat log since the calling user has entered, and prints it to the screen
 
 -------------------------------------------------------------
 

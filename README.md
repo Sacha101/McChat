@@ -16,6 +16,10 @@ ClientListener.java
 
 -------------------------------------------------------------
 
+To compile:
+
+(in McChat directory) javac *.java
+
 Usage:
 
 MCServer - java MCServer

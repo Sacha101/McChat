@@ -28,7 +28,9 @@ Client-side inline commands:
 
 !quit - closes the client
 
-!w [target] sends a private whisper message to the target username
+!w [target] - sends a private whisper message to the target username
+
+!log - saves a .txt file containing the chat log since the calling user has entered
 
 -------------------------------------------------------------
 
